@@ -5,6 +5,7 @@ import json
 
 BLOCKLIST_TXT = "blocklist.txt"
 BLOCKLIST_JSON = "blocklist.json"
+CATEGORIES = {"Games": "games.txt", "Social Media": "socialmedia.txt"}
 
 def load_blocklist():
     blocklist = set()
@@ -13,7 +14,6 @@ def load_blocklist():
             blocklist.update(line.strip() for line in file.readlines())
     except FileNotFoundError:
         pass
-
 
     return blocklist
 
@@ -53,17 +53,18 @@ def remove_selected():
 
 def refresh_listbox():
     listbox.delete(0, tk.END)
+    search_query = search_entry.get().strip().lower()
     for domain in sorted(blocklist):
-        listbox.insert(tk.END, domain)
+        if search_query in domain.lower():  # Filteren op zoekopdracht
+            listbox.insert(tk.END, domain)
 
 # GUI Setup
 root = tk.Tk()
 root.title("Blocklist Manager")
 root.geometry("600x500")
 
-# Configure grid layout
 root.columnconfigure(0, weight=1)
-root.rowconfigure(1, weight=1)
+root.rowconfigure(2, weight=1)
 
 # Input & Add Button
 frame = tk.Frame(root)
@@ -74,9 +75,19 @@ entry = tk.Entry(frame)
 entry.grid(row=0, column=0, sticky="ew", padx=5)
 tk.Button(frame, text="Add", command=add_domain).grid(row=0, column=1, padx=5)
 
+# Search Bar
+search_frame = tk.Frame(root)
+search_frame.grid(row=1, column=0, pady=5, padx=5, sticky="ew")
+search_frame.columnconfigure(0, weight=1)
+
+search_entry = tk.Entry(search_frame)
+search_entry.grid(row=0, column=0, sticky="ew", padx=5)
+search_entry.bind("<KeyRelease>", lambda event: refresh_listbox())  # Dynamische filtering
+tk.Label(search_frame, text="🔍 Search:").grid(row=0, column=1, padx=5)
+
 # Listbox with Scrollbar
 list_frame = tk.Frame(root)
-list_frame.grid(row=1, column=0, pady=5, padx=5, sticky="nsew")
+list_frame.grid(row=2, column=0, pady=5, padx=5, sticky="nsew")
 list_frame.rowconfigure(0, weight=1)
 list_frame.columnconfigure(0, weight=1)
 
@@ -89,17 +100,12 @@ listbox.config(yscrollcommand=scrollbar.set)
 
 # Buttons
 button_frame = tk.Frame(root)
-button_frame.grid(row=2, column=0, pady=5, padx=5, sticky="ew")
+button_frame.grid(row=3, column=0, pady=5, padx=5, sticky="ew")
 button_frame.columnconfigure([0, 1, 2], weight=1)
 
 tk.Button(button_frame, text="Remove Selected", command=remove_selected).grid(row=0, column=0, padx=5, sticky="ew")
 tk.Button(button_frame, text="Update Blocklist", command=update_blocklist).grid(row=0, column=1, padx=5, sticky="ew")
 tk.Button(button_frame, text="Save Changes", command=lambda: save_blocklist(blocklist)).grid(row=0, column=2, padx=5, sticky="ew")
-
-# Category Checkboxes
-category_frame = tk.Frame(root)
-category_frame.grid(row=3, column=0, pady=5, padx=5, sticky="ew")
-category_vars = {}
 
 
 # Load blocklist into listbox
