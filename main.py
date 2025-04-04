@@ -5,7 +5,6 @@ import json
 
 BLOCKLIST_TXT = "blocklist.txt"
 BLOCKLIST_JSON = "blocklist.json"
-CATEGORIES = {"Games": "games.txt", "Social Media": "socialmedia.txt"}
 
 def load_blocklist():
     blocklist = set()
