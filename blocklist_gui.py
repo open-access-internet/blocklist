@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 import subprocess
 import json
+import os
 
 BLOCKLIST_TXT = "blocklist.txt"
 BLOCKLIST_JSON = "blocklist.json"
@@ -9,7 +10,7 @@ BLOCKLIST_JSON = "blocklist.json"
 def load_blocklist():
     blocklist = set()
     try:
-        with open(BLOCKLIST_TXT, "r") as file:
+        with open(BLOCKLIST_TXT, "r", encoding="utf-8") as file:
             blocklist.update(line.strip() for line in file.readlines())
     except FileNotFoundError:
         pass
@@ -17,16 +18,29 @@ def load_blocklist():
     return blocklist
 
 def save_blocklist(blocklist):
-    with open(BLOCKLIST_TXT, "w") as file:
-        for domain in sorted(blocklist):
-            file.write(domain + "\n")
-    with open(BLOCKLIST_JSON, "w") as json_file:
-        json.dump({"blocked_sites": sorted(blocklist)}, json_file, indent=4)
-    messagebox.showinfo("Saved", "Blocklist saved successfully!")
+    try:
+        with open(TXT_FILE, "r", encoding="utf-8") as f:
+            txt_entries = set(f.read().splitlines())
+    except FileNotFoundError:
+        txt_entries = set()
+    except UnicodeDecodeError:
+        print("⚠️ Waarschuwing: blocklist.txt bevat onleesbare tekens. Bestand wordt overgeslagen.")
+        txt_entries = set()
+
+    try:
+        with open(JSON_FILE, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            json_entries = set(data.get("blocked_sites", []))
+    except (FileNotFoundError, json.JSONDecodeError):
+        json_entries = set()
+
+    return txt_entries.union(json_entries)
 
 def update_blocklist():
     try:
-        subprocess.run(["python", "update_blocklist.py"], check=True)
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        script_path = os.path.join(script_dir, "update_blocklist.py")
+        subprocess.run(["python", script_path], check=True)
         messagebox.showinfo("Update", "Blocklist updated successfully!")
     except subprocess.CalledProcessError:
         messagebox.showerror("Error", "Failed to update blocklist!")
