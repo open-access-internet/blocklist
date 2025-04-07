@@ -24,7 +24,7 @@ def save_blocklist(blocklist):
     except FileNotFoundError:
         txt_entries = set()
     except UnicodeDecodeError:
-        print("⚠️ Waarschuwing: blocklist.txt bevat onleesbare tekens. Bestand wordt overgeslagen.")
+        print("⚠️ Warning: blocklist.txt contains unreadable characters. File will be skipped.")
         txt_entries = set()
 
     try:
@@ -68,7 +68,7 @@ def refresh_listbox():
     listbox.delete(0, tk.END)
     search_query = search_entry.get().strip().lower()
     for domain in sorted(blocklist):
-        if search_query in domain.lower():  # Filteren op zoekopdracht
+        if search_query in domain.lower():  # Filter by search
             listbox.insert(tk.END, domain)
 
 # GUI Setup
